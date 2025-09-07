@@ -1,0 +1,519 @@
+<!DOCTYPE html>
+<html lang="en" class="scroll-smooth">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Zlatni Juli - Interactive Performance Report (July 2025)</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <!-- Chosen Palette: Warm Neutrals & Subtle Gold -->
+    <!-- Application Structure Plan: A single-page dashboard design is used to present financial data intuitively. The structure flows from a high-level 'Performance Dashboard' with key KPIs for the current month, to 'Performance Trends' with interactive charts for historical context, and finally to 'Financial Details' with tabbed, drill-down tables for in-depth analysis. This thematic, top-down approach was chosen over mirroring the report's linear format because it aligns with a business owner's decision-making process: get the summary, see the trends, then explore the details. This enhances usability and allows for quicker insights. -->
+    <!-- Visualization & Content Choices: KPIs are shown in cards (HTML/CSS) for quick information. A donut chart (Chart.js) compares revenue to expenses, highlighting cost structure. A combination bar/line chart (Chart.js) visualizes monthly trends, with a toggle to compare 2024 and 2025 data, showing change over time effectively. Detailed statements are organized in interactive HTML tables with JS-powered drill-downs to manage complexity and provide organized detail on demand. This combination of methods provides a layered, interactive experience. -->
+    <!-- CONFIRMATION: NO SVG graphics used. NO Mermaid JS used. -->
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #FDFBF6;
+            color: #3C3C3C;
+        }
+        .kpi-card {
+            background-color: #FFFFFF;
+            border-radius: 0.75rem;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+            transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
+        }
+        .kpi-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+        }
+        .nav-link {
+            transition: color 0.2s;
+        }
+        .nav-link:hover {
+            color: #C0A080;
+        }
+        .active-tab {
+            border-bottom: 2px solid #C0A080;
+            color: #C0A080;
+            font-weight: 600;
+        }
+        .tab {
+            cursor: pointer;
+        }
+        .detail-row {
+            background-color: #F8F6F2;
+        }
+        .chart-container {
+            position: relative;
+            width: 100%;
+            max-width: 800px;
+            margin-left: auto;
+            margin-right: auto;
+            height: 320px;
+            max-height: 450px;
+        }
+        @media (min-width: 768px) {
+            .chart-container {
+                height: 400px;
+            }
+        }
+    </style>
+</head>
+<body class="antialiased">
+
+    <header class="bg-white/80 backdrop-blur-lg sticky top-0 z-50 shadow-sm">
+        <div class="container mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex items-center justify-between h-16">
+                <div class="flex-shrink-0">
+                    <h1 class="text-xl font-bold text-[#3C3C3C]">Zlatni Juli <span class="font-light text-[#C0A080]">| Performance Report</span></h1>
+                </div>
+                <nav class="hidden md:block">
+                    <div class="ml-10 flex items-baseline space-x-4">
+                        <a href="#dashboard" class="nav-link px-3 py-2 rounded-md text-sm font-medium">Dashboard</a>
+                        <a href="#trends" class="nav-link px-3 py-2 rounded-md text-sm font-medium">Trends</a>
+                        <a href="#details" class="nav-link px-3 py-2 rounded-md text-sm font-medium">Financial Details</a>
+                        <a href="#recommendations" class="nav-link px-3 py-2 rounded-md text-sm font-medium">Recommendations</a>
+                    </div>
+                </nav>
+            </div>
+        </div>
+    </header>
+
+    <main class="container mx-auto px-4 sm:px-6 lg:px-8 py-8 md:py-12">
+
+        <section id="dashboard" class="mb-16">
+            <div class="text-center mb-8">
+                <h2 class="text-3xl font-bold tracking-tight">July 2025 Performance Dashboard</h2>
+                <p class="mt-2 text-lg text-gray-600">A high-level overview of the restaurant's financial health for the current period.</p>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-12">
+                <div class="kpi-card p-6">
+                    <h3 class="text-sm font-medium text-gray-500">Operating Revenue</h3>
+                    <p class="mt-1 text-3xl font-semibold text-[#3C3C3C]">KD 337</p>
+                    <p class="mt-1 text-sm text-gray-500">vs KD 291 in June</p>
+                </div>
+                <div class="kpi-card p-6">
+                    <h3 class="text-sm font-medium text-gray-500">Gross Profit</h3>
+                    <p class="mt-1 text-3xl font-semibold text-green-600">KD 325</p>
+                    <p class="mt-1 text-sm text-gray-500">96% Margin</p>
+                </div>
+                <div class="kpi-card p-6">
+                    <h3 class="text-sm font-medium text-gray-500">G&A Expenses</h3>
+                    <p class="mt-1 text-3xl font-semibold text-amber-600">KD 1,650</p>
+                    <p class="mt-1 text-sm text-gray-500">Mainly Rent (KD 1,300)</p>
+                </div>
+                <div class="kpi-card p-6">
+                    <h3 class="text-sm font-medium text-gray-500">Net Profit / (Loss)</h3>
+                    <p class="mt-1 text-3xl font-semibold text-red-600">(KD 1,687)</p>
+                    <p class="mt-1 text-sm text-gray-500">Driven by high fixed costs</p>
+                </div>
+            </div>
+
+            <div class="bg-white p-6 rounded-lg shadow-md">
+                 <h3 class="text-xl font-semibold mb-4 text-center">July 2025 Financial Breakdown</h3>
+                 <p class="text-center text-gray-600 mb-6">This chart illustrates how the month's revenue was allocated across operating costs and general & administrative expenses, revealing the resulting net loss. It clearly shows that administrative overhead is the primary driver of the monthly deficit.</p>
+                <div class="chart-container">
+                    <canvas id="financialBreakdownChart"></canvas>
+                </div>
+            </div>
+        </section>
+
+        <section id="trends" class="mb-16">
+            <div class="text-center mb-8">
+                <h2 class="text-3xl font-bold tracking-tight">Performance Trends</h2>
+                <p class="mt-2 text-lg text-gray-600">Visualize monthly performance to identify patterns and compare with the previous year.</p>
+            </div>
+            <div class="bg-white p-6 rounded-lg shadow-md">
+                <div class="flex justify-center items-center mb-4 space-x-2">
+                    <span class="font-medium">Select Year:</span>
+                    <button id="btn2025" class="px-4 py-2 text-sm font-semibold rounded-md bg-[#C0A080] text-white">2025</button>
+                    <button id="btn2024" class="px-4 py-2 text-sm font-semibold rounded-md bg-gray-200 text-gray-700">2024</button>
+                </div>
+                <p id="trends-context" class="text-center text-gray-600 mb-6">This chart tracks key financial metrics month-over-month. The bars represent operating revenue, while the lines show total costs and the resulting net profit or loss. Use the buttons above to toggle between 2025 and 2024 data to compare performance across years.</p>
+                <div class="chart-container">
+                    <canvas id="monthlyTrendsChart"></canvas>
+                </div>
+            </div>
+        </section>
+
+        <section id="details" class="mb-16">
+            <div class="text-center mb-8">
+                <h2 class="text-3xl font-bold tracking-tight">Financial Details</h2>
+                 <p class="mt-2 text-lg text-gray-600">Explore the detailed financial statements for July 2025 compared to the previous period.</p>
+            </div>
+            <div class="bg-white rounded-lg shadow-md">
+                <div class="border-b border-gray-200">
+                    <nav class="-mb-px flex space-x-8 px-6" aria-label="Tabs">
+                        <button id="tab-pl" class="tab whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm active-tab">Profit & Loss</button>
+                        <button id="tab-fp" class="tab whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm">Financial Position</button>
+                        <button id="tab-cf" class="tab whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm">Cash Flow</button>
+                    </nav>
+                </div>
+                <div id="content-pl" class="p-6">
+                    <p class="text-gray-600 mb-4">The Profit & Loss statement summarizes revenues, costs, and expenses incurred during the period. Click on rows with a '▸' to see a detailed breakdown.</p>
+                    <div class="overflow-x-auto">
+                        <table class="min-w-full divide-y divide-gray-200">
+                            <thead class="bg-gray-50">
+                                <tr>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Description</th>
+                                    <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">July 2025</th>
+                                    <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Year-to-Date</th>
+                                </tr>
+                            </thead>
+                            <tbody class="bg-white divide-y divide-gray-200">
+                                <tr class="cursor-pointer" onclick="toggleDetail('detail-revenue')">
+                                    <td class="px-6 py-4 whitespace-nowrap font-medium">▸ Operating Revenue</td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-right font-medium">337</td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-right font-medium">3,221</td>
+                                </tr>
+                                <tr id="detail-revenue" class="hidden">
+                                    <td colspan="3" class="p-0">
+                                        <table class="min-w-full">
+                                            <tr class="detail-row"><td class="px-12 py-2">Cash Sales</td><td class="px-6 py-2 text-right">28</td><td class="px-6 py-2 text-right">607</td></tr>
+                                            <tr class="detail-row"><td class="px-12 py-2">Credit Card Sales</td><td class="px-6 py-2 text-right">45</td><td class="px-6 py-2 text-right">630</td></tr>
+                                            <tr class="detail-row"><td class="px-12 py-2">Knet Sales</td><td class="px-6 py-2 text-right">264</td><td class="px-6 py-2 text-right">1,984</td></tr>
+                                        </table>
+                                    </td>
+                                </tr>
+                                <tr class="cursor-pointer" onclick="toggleDetail('detail-cost')">
+                                    <td class="px-6 py-4 whitespace-nowrap">▸ Operating Cost</td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-right">(12)</td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-right">(759)</td>
+                                </tr>
+                                <tr id="detail-cost" class="hidden">
+                                    <td colspan="3" class="p-0">
+                                        <table class="min-w-full">
+                                             <tr class="detail-row"><td class="px-12 py-2">Food Purchases</td><td class="px-6 py-2 text-right">9</td><td class="px-6 py-2 text-right">664</td></tr>
+                                             <tr class="detail-row"><td class="px-12 py-2">Collection Fees</td><td class="px-6 py-2 text-right">3</td><td class="px-6 py-2 text-right">29</td></tr>
+                                             <tr class="detail-row"><td class="px-12 py-2">Packaging & Other</td><td class="px-6 py-2 text-right">0</td><td class="px-6 py-2 text-right">66</td></tr>
+                                        </table>
+                                    </td>
+                                </tr>
+                                <tr class="bg-gray-50">
+                                    <td class="px-6 py-4 whitespace-nowrap font-bold">Gross Profit</td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-right font-bold text-green-600">325</td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-right font-bold text-green-600">2,462</td>
+                                </tr>
+                                <tr class="cursor-pointer" onclick="toggleDetail('detail-ga')">
+                                    <td class="px-6 py-4 whitespace-nowrap">▸ General & Administrative Expenses</td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-right">(1,650)</td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-right">(13,909)</td>
+                                </tr>
+                                <tr id="detail-ga" class="hidden">
+                                     <td colspan="3" class="p-0">
+                                        <table class="min-w-full">
+                                             <tr class="detail-row"><td class="px-12 py-2">Rent</td><td class="px-6 py-2 text-right">1,300</td><td class="px-6 py-2 text-right">9,100</td></tr>
+                                             <tr class="detail-row"><td class="px-12 py-2">Salaries & Wages</td><td class="px-6 py-2 text-right">100</td><td class="px-6 py-2 text-right">2,351</td></tr>
+                                             <tr class="detail-row"><td class="px-12 py-2">Professional Fees</td><td class="px-6 py-2 text-right">150</td><td class="px-6 py-2 text-right">1,000</td></tr>
+                                             <tr class="detail-row"><td class="px-12 py-2">Other Expenses</td><td class="px-6 py-2 text-right">100</td><td class="px-6 py-2 text-right">1,458</td></tr>
+                                        </table>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td class="px-6 py-4 whitespace-nowrap">Depreciation</td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-right">(362)</td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-right">(2,504)</td>
+                                </tr>
+                                <tr class="bg-gray-50">
+                                    <td class="px-6 py-4 whitespace-nowrap font-bold">Net Profit / (Loss) for the Period</td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-right font-bold text-red-600">(1,687)</td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-right font-bold text-red-600">(11,985)</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+                <div id="content-fp" class="p-6 hidden">
+                    <p class="text-gray-600 mb-4">The Financial Position statement (or Balance Sheet) shows the company's assets, liabilities, and equity at a specific point in time.</p>
+                    <div class="overflow-x-auto">
+                        <table class="min-w-full divide-y divide-gray-200">
+                             <thead class="bg-gray-50">
+                                <tr>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Description</th>
+                                    <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">July 31, 2025</th>
+                                    <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">May 31, 2025</th>
+                                </tr>
+                            </thead>
+                            <tbody class="bg-white divide-y divide-gray-200">
+                                <tr class="bg-gray-100"><td colspan="3" class="px-6 py-2 font-bold">ASSETS</td></tr>
+                                <tr><td>Cash on hand and at banks</td><td class="text-right">1,935</td><td class="text-right">1,818</td></tr>
+                                <tr><td>Accounts receivable</td><td class="text-right">1,415</td><td class="text-right">1,484</td></tr>
+                                <tr class="font-semibold"><td>Total Current Assets</td><td class="text-right">3,350</td><td class="text-right">3,302</td></tr>
+                                <tr><td>Property and equipment</td><td class="text-right">18,762</td><td class="text-right">18,946</td></tr>
+                                <tr class="font-semibold"><td>Total Non-Current Assets</td><td class="text-right">18,762</td><td class="text-right">18,946</td></tr>
+                                <tr class="bg-gray-50 font-bold"><td>Total Assets</td><td class="text-right">22,112</td><td class="text-right">22,248</td></tr>
+                                
+                                <tr class="bg-gray-100"><td colspan="3" class="px-6 py-2 font-bold">LIABILITIES & EQUITY</td></tr>
+                                <tr><td>Accounts payable</td><td class="text-right">623</td><td class="text-right">453</td></tr>
+                                <tr class="font-semibold"><td>Total Current Liabilities</td><td class="text-right">623</td><td class="text-right">453</td></tr>
+                                <tr><td>Provision for end of service</td><td class="text-right">86</td><td class="text-right">77</td></tr>
+                                <tr class="font-semibold"><td>Total Non-Current Liabilities</td><td class="text-right">86</td><td class="text-right">77</td></tr>
+                                <tr class="bg-gray-50 font-bold"><td>Total Liabilities</td><td class="text-right">709</td><td class="text-right">530</td></tr>
+
+                                <tr><td>Capital</td><td class="text-right">1,000</td><td class="text-right">1,000</td></tr>
+                                <tr><td>Retained Earnings</td><td class="text-right">(15,901)</td><td class="text-right">(14,901)</td></tr>
+                                <tr><td>Owners' Current Accounts</td><td class="text-right">37,991</td><td class="text-right">36,619</td></tr>
+                                <tr class="font-semibold"><td>Total Equity</td><td class="text-right">21,403</td><td class="text-right">21,718</td></tr>
+                                <tr class="bg-gray-50 font-bold"><td>Total Liabilities and Equity</td><td class="text-right">22,112</td><td class="text-right">22,248</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+                <div id="content-cf" class="p-6 hidden">
+                    <p class="text-gray-600 mb-4">The Cash Flow statement shows how changes in balance sheet accounts and income affect cash and cash equivalents.</p>
+                    <div class="overflow-x-auto">
+                        <table class="min-w-full divide-y divide-gray-200">
+                             <thead class="bg-gray-50">
+                                <tr>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Description</th>
+                                    <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">July 2025</th>
+                                    <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Year-to-Date</th>
+                                </tr>
+                            </thead>
+                            <tbody class="bg-white divide-y divide-gray-200">
+                                <tr><td>Net profit for the period</td><td class="text-right">(1,687)</td><td class="text-right">(11,985)</td></tr>
+                                <tr><td>Adjustments (Depreciation, etc.)</td><td class="text-right">371</td><td class="text-right">1,660</td></tr>
+                                <tr class="font-semibold"><td>Net cash from operating activities</td><td class="text-right text-red-600">(1,077)</td><td class="text-right text-red-600">(8,834)</td></tr>
+                                <tr><td>Net cash used in investing activities</td><td class="text-right text-red-600">(178)</td><td class="text-right text-red-600">(809)</td></tr>
+                                <tr><td>Net cash from financing activities</td><td class="text-right text-green-600">1,372</td><td class="text-right text-green-600">9,782</td></tr>
+                                <tr class="bg-gray-50 font-bold"><td>Net increase in cash</td><td class="text-right">117</td><td class="text-right">139</td></tr>
+                                <tr><td>Cash at beginning of period</td><td class="text-right">1,818</td><td class="text-right">1,796</td></tr>
+                                <tr class="bg-gray-50 font-bold"><td>Cash at end of period</td><td class="text-right">1,935</td><td class="text-right">1,935</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section id="recommendations">
+            <div class="text-center mb-8">
+                <h2 class="text-3xl font-bold tracking-tight">Key Recommendations</h2>
+                <p class="mt-2 text-lg text-gray-600">Actionable insights based on the July 2025 financial data.</p>
+            </div>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+                <div class="bg-white p-6 rounded-lg shadow-md">
+                    <h3 class="text-lg font-semibold mb-2 text-[#C0A080]">1. Drive Revenue Growth</h3>
+                    <p>The 96% gross profit margin is excellent, but overall sales are too low to cover fixed costs. The primary focus must be on increasing daily customer traffic and sales volume through targeted marketing, promotions, and local outreach.</p>
+                </div>
+                <div class="bg-white p-6 rounded-lg shadow-md">
+                    <h3 class="text-lg font-semibold mb-2 text-[#C0A080]">2. Scrutinize Fixed Expenses</h3>
+                    <p>General & Administrative expenses, particularly the KD 1,300 monthly rent, are the main cause of the net loss. Explore possibilities for cost reduction, renegotiate contracts where possible, and critically evaluate all non-essential spending.</p>
+                </div>
+                <div class="bg-white p-6 rounded-lg shadow-md">
+                    <h3 class="text-lg font-semibold mb-2 text-[#C0A080]">3. Improve Cash Flow from Operations</h3>
+                    <p>The business is currently relying on owner financing to maintain cash flow. A sustained increase in sales is necessary to generate positive cash flow from core business operations, ensuring long-term financial stability and reducing dependency on external funding.</p>
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+    <footer class="bg-white mt-16 border-t">
+        <div class="container mx-auto py-6 px-4 sm:px-6 lg:px-8 text-center text-gray-500 text-sm">
+            <p>Interactive Financial Report for Zlatni Juli Coffee & Restaurant</p>
+            <p>Data as of July 31, 2025. This is an interactive visualization of the official report.</p>
+        </div>
+    </footer>
+
+    <script>
+        const dataStore = {
+            july2025: {
+                revenue: 337,
+                opCost: 12,
+                gaCost: 1650,
+                netLoss: -1687,
+            },
+            trends2025: {
+                labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul'],
+                revenue: [740, 778, 542, 448, 291, 85, 337],
+                totalCost: [2538, 2331, 2551, 2359, 1689, 1538, 1662],
+                netProfit: [-1903, -1903, -2370, -2269, -1174, -679, -1687],
+            },
+            trends2024: {
+                labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'],
+                revenue: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 795, 948],
+                totalCost: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 3607, 3214],
+                netProfit: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, -2988, -2615],
+            }
+        };
+
+        function createFinancialBreakdownChart() {
+            const ctx = document.getElementById('financialBreakdownChart').getContext('2d');
+            const data = dataStore.july2025;
+            new Chart(ctx, {
+                type: 'doughnut',
+                data: {
+                    labels: ['Operating Cost', 'G&A Expenses', 'Net Loss'],
+                    datasets: [{
+                        data: [data.opCost, data.gaCost, Math.abs(data.netLoss)],
+                        backgroundColor: ['#6EE7B7', '#FBBF24', '#F87171'],
+                        borderColor: '#FFFFFF',
+                        borderWidth: 4,
+                        hoverOffset: 8
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        title: { display: false },
+                        legend: { position: 'bottom', labels: { padding: 20 } },
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    let label = context.label || '';
+                                    if (label) {
+                                        label += ': ';
+                                    }
+                                    if (context.parsed !== null) {
+                                        label += `KD ${context.parsed.toLocaleString()}`;
+                                    }
+                                    return label;
+                                }
+                            }
+                        }
+                    },
+                    cutout: '60%',
+                }
+            });
+        }
+
+        let monthlyTrendsChart;
+        function createOrUpdateMonthlyTrendsChart(year) {
+            const data = dataStore[`trends${year}`];
+            const ctx = document.getElementById('monthlyTrendsChart').getContext('2d');
+
+            if (monthlyTrendsChart) {
+                monthlyTrendsChart.data.labels = data.labels;
+                monthlyTrendsChart.data.datasets[0].data = data.revenue;
+                monthlyTrendsChart.data.datasets[1].data = data.totalCost;
+                monthlyTrendsChart.data.datasets[2].data = data.netProfit;
+                monthlyTrendsChart.update();
+                return;
+            }
+
+            monthlyTrendsChart = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: data.labels,
+                    datasets: [
+                        {
+                            label: 'Operating Revenue',
+                            data: data.revenue,
+                            backgroundColor: '#C0A080',
+                            order: 2
+                        },
+                        {
+                            label: 'Total Costs (Op + G&A)',
+                            data: data.totalCost,
+                            borderColor: '#FBBF24',
+                            backgroundColor: '#FBBF24',
+                            type: 'line',
+                            fill: false,
+                            tension: 0.1,
+                            order: 1
+                        },
+                        {
+                            label: 'Net Profit / (Loss)',
+                            data: data.netProfit,
+                            borderColor: '#F87171',
+                            backgroundColor: '#F87171',
+                            type: 'line',
+                            fill: false,
+                            tension: 0.1,
+                            order: 0
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        title: { display: false },
+                        tooltip: {
+                            mode: 'index',
+                            intersect: false,
+                            callbacks: {
+                                label: function(context) {
+                                    let label = context.dataset.label || '';
+                                    if (label) {
+                                        label += ': ';
+                                    }
+                                    if (context.parsed.y !== null) {
+                                        label += `KD ${context.parsed.y.toLocaleString()}`;
+                                    }
+                                    return label;
+                                }
+                            }
+                        }
+                    },
+                    scales: {
+                        x: { grid: { display: false } },
+                        y: { 
+                            beginAtZero: false,
+                            ticks: {
+                                callback: function(value) {
+                                    return `KD ${value / 1000}k`;
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+        }
+
+        function setupTabs() {
+            const tabs = document.querySelectorAll('.tab');
+            const contents = {
+                'tab-pl': document.getElementById('content-pl'),
+                'tab-fp': document.getElementById('content-fp'),
+                'tab-cf': document.getElementById('content-cf'),
+            };
+
+            tabs.forEach(tab => {
+                tab.addEventListener('click', () => {
+                    tabs.forEach(t => t.classList.remove('active-tab'));
+                    tab.classList.add('active-tab');
+
+                    Object.values(contents).forEach(content => content.classList.add('hidden'));
+                    contents[tab.id].classList.remove('hidden');
+                });
+            });
+        }
+
+        function toggleDetail(detailId) {
+            document.getElementById(detailId).classList.toggle('hidden');
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            createFinancialBreakdownChart();
+            createOrUpdateMonthlyTrendsChart(2025);
+            setupTabs();
+
+            const btn2025 = document.getElementById('btn2025');
+            const btn2024 = document.getElementById('btn2024');
+
+            btn2025.addEventListener('click', () => {
+                createOrUpdateMonthlyTrendsChart(2025);
+                btn2025.classList.add('bg-[#C0A080]', 'text-white');
+                btn2025.classList.remove('bg-gray-200', 'text-gray-700');
+                btn2024.classList.add('bg-gray-200', 'text-gray-700');
+                btn2024.classList.remove('bg-[#C0A080]', 'text-white');
+            });
+
+            btn2024.addEventListener('click', () => {
+                createOrUpdateMonthlyTrendsChart(2024);
+                btn2024.classList.add('bg-[#C0A080]', 'text-white');
+                btn2024.classList.remove('bg-gray-200', 'text-gray-700');
+                btn2025.classList.add('bg-gray-200', 'text-gray-700');
+                btn2025.classList.remove('bg-[#C0A080]', 'text-white');
+            });
+        });
+    </script>
+</body>
+</html>
